@@ -22,7 +22,7 @@ use crate::{error, fmt, ptr};
 /// dropping will attempt to flush the contents of the buffer, any errors
 /// that happen in the process of dropping will be ignored. Calling [`flush`]
 /// ensures that the buffer is empty and thus dropping will not even attempt
-/// file operations.
+/// operations on the underlying writer.
 ///
 /// # Examples
 ///
@@ -134,12 +134,13 @@ impl<W: Write> BufWriter<W> {
     ///
     /// ```no_run
     /// use std::io::BufWriter;
-    /// use std::net::TcpStream;
+    /// use std::fs::File;
     ///
-    /// let mut buffer = BufWriter::new(TcpStream::connect("127.0.0.1:34254").unwrap());
+    /// let mut buffer = BufWriter::new(File::create("test.file").unwrap());
     ///
-    /// // unwrap the TcpStream and flush the buffer
-    /// let stream = buffer.into_inner().unwrap();
+    /// // unwrap the File, for example to sync before drop
+    /// let file = buffer.into_inner().unwrap();
+    /// file.sync_all().unwrap();
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn into_inner(mut self) -> Result<W, IntoInnerError<BufWriter<W>>> {
